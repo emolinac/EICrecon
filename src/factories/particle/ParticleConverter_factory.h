@@ -1,7 +1,5 @@
 #pragma once
 
-#include <std>
-
 #include "extensions/jana/JOmniFactory.h"
 
 #include <edm4eic/Track.h>
@@ -21,13 +19,11 @@ namespace eicrecon {
 			std::unique_ptr<Algo> m_algo;
 
 			// Input collections
-			PodioInput<edm4eic::Track> m_tracks_input {this, "Tracks"};
-			PodioInput<edm4eic::Cluster> m_clusters_input {this, "Clusters"};
-			PodioInput<edm4eic::TrackClusterMatch> m_trackclustermatch_input {this, "TrackClusterMatches"};
+			PodioInput<edm4eic::ReconstructedParticle> m_recoparticles_input {this};
 
 			// Output collection
 			// - Reconstructed particles
-			PodioOutput<edm4eic::ReconstructedParticles> m_recoparticles_output {this};
+			PodioOutput<edm4eic::ReconstructedParticle> m_recoparticles_output {this};
 
 			// Parameters
 			ParameterRef<double> m_tracking_resolution {this, "tracking_resolution", config().tracking_resolution};
@@ -42,14 +38,14 @@ namespace eicrecon {
 				m_algo->level((algorithms::LogLevel) logger()->level());
 				
 				// Pass config object to the algorithm
-				m_algo->applyConfig(FactoryT::config());
+				m_algo->applyConfig(config());
 
 				m_algo->init();
 			};
 
 			void Process(int32_t /* run_number */, uint64_t /* event_number */) {
-				m_algo->Process({m_tracks_input(), m_clusters_input(), m_trackclustermatch_input()},
+				m_algo->process({m_recoparticles_input()},
 						{m_recoparticles_output().get() /* Outputs defined in private */});
 			}
-	}
+	};
 }

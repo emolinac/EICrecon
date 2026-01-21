@@ -2,32 +2,34 @@
 #pragma once
 
 #include <algorithms/algorithm.h>
+#include <algorithms/geo.h>
 
-#include <edm4eic/TrackCollection.h>
-#include <edm4eic/ClusterCollection.h>
-#include <edm4eic/TrackClusterMatchCollection.h>
 #include <edm4eic/ReconstructedParticleCollection.h>
 
 #include <string>
 #include <string_view>
 
-#include "ParticleConverterConfig.h"
 #include "algorithms/interfaces/WithPodConfig.h"
+#include "algorithms/particle/ParticleConverterConfig.h"
 
 // Class definition
 namespace eicrecon {
-        using ParticleConverterAlgorithm = algorithms::Algorithm<algorithms::Input<edm4eic::TrackCollection, edm4eic::ClusterCollection, edm4eic::TrackClusterMatchCollection>,
+        // Define an "alias" for the templated algorithms constructor
+        using ParticleConverterAlgorithm = algorithms::Algorithm<algorithms::Input<edm4eic::ReconstructedParticleCollection>,
                                                                  algorithms::Output<edm4eic::ReconstructedParticleCollection>>;
 
+        // Define the class of particle converter which uses as a base the algorithms class 
         class ParticleConverter : public ParticleConverterAlgorithm, public WithPodConfig<ParticleConverterConfig> {
                 public:
+                        // Constructor of ParticleConverter inherits from the constructor of ParticleConverterAlgorithm
                         ParticleConverter(std::string_view name) : 
-                        ParticleConverterAlgorithm(name, {"inputTracks", "inputClusters", "inputTrackClusterMatches"}, {"outputRecoParticles"} ,"Particles as such (?)") {}; 
+                        ParticleConverterAlgorithm(name, {"inputRecoParticles"}, {"outputRecoParticles"} ,"Particles as such (?)") {}; 
 
-                        void init() final{}; // what is the use of making it final?
+                        void init() final {}; // what is the use of making it final?
                         void process(const Input&, const Output&) const final;
 
                 private:
                         // Services and calibrations here!
+                        const algorithms::GeoSvc& m_geo = algorithms::GeoSvc::instance();
         };
 }
